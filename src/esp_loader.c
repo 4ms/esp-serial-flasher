@@ -30,7 +30,7 @@
 #endif
 
 #ifndef ROUNDUP
-#define ROUNDUP(a, b) (((int)a + (int)b - 1) / (int)b)
+#define ROUNDUP(a, b) (((uint32_t)a + (uint32_t)b - 1) / (uint32_t)b)
 #endif
 
 static const uint32_t DEFAULT_TIMEOUT = 1000;
