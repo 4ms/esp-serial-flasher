@@ -22,12 +22,12 @@ static const uint8_t DB_REPLACEMENT[2] = {0xDB, 0xDD};
 
 static inline esp_loader_error_t peripheral_read(uint8_t *buff, const size_t size)
 {
-    return loader_port_read(buff, size, loader_port_remaining_time());
+    return loader_port_read(buff, (uint16_t)size, loader_port_remaining_time());
 }
 
 static inline esp_loader_error_t peripheral_write(const uint8_t *buff, const size_t size)
 {
-    return loader_port_write(buff, size, loader_port_remaining_time());
+    return loader_port_write(buff, (uint16_t)size, loader_port_remaining_time());
 }
 
 esp_loader_error_t SLIP_receive_data(uint8_t *buff, const size_t size)
