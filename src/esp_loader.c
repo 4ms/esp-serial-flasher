@@ -73,9 +73,12 @@ static inline void md5_final(uint8_t digets[16])
 
 #else
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 static inline void init_md5(uint32_t address, uint32_t size) { }
 static inline void md5_update(const uint8_t *data, uint32_t size) { }
 static inline void md5_final(uint8_t digets[16]) { }
+#pragma GCC diagnostic pop
 
 #endif
 
