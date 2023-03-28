@@ -153,11 +153,6 @@ static const esp_target_t esp_target[ESP_MAX_CHIP] = {
     },
 };
 
-const target_registers_t *get_esp_target_data(target_chip_t chip)
-{
-    return (const target_registers_t *)&esp_target[chip];
-}
-
 esp_loader_error_t loader_detect_chip(target_chip_t *target_chip, const target_registers_t **target_data)
 {
     uint32_t magic_value;
