@@ -213,7 +213,7 @@ static esp_loader_error_t spi_config_esp32(uint32_t efuse_base, uint32_t *spi_co
         return ESP_LOADER_SUCCESS;
     }
 
-    *spi_config = (hd << 24) | (cs << 18) | (d << 12) | (q << 6) | clk;
+    *spi_config = ((uint32_t)hd << 24) | (cs << 18) | (d << 12) | (q << 6) | clk;
 
     return ESP_LOADER_SUCCESS;
 }
