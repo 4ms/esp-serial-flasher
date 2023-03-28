@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
+set(ESP_SERIAL_FLASHER_PORT "CUSTOM" CACHE STRING "Port")
+set_property(CACHE ESP_SERIAL_FLASHER_PORT PROPERTY STRINGS "ESP;STM32;RASPBERRY_PI;CUSTOM")
+
 set(srcs
     src/esp_loader.c
     src/esp_targets.c
@@ -41,15 +44,17 @@ else()
 
     target_include_directories(flasher PUBLIC include port PRIVATE private_include)
 
-    if(PORT STREQUAL "STM32")
+    if(ESP_SERIAL_FLASHER_PORT STREQUAL "STM32")
         target_link_libraries(flasher PUBLIC stm_cube)
         target_sources(flasher PRIVATE port/stm32_port.c)
-    elseif(PORT STREQUAL "RASPBERRY_PI")
+    elseif(ESP_SERIAL_FLASHER_PORT STREQUAL "RASPBERRY_PI")
         find_library(pigpio_LIB pigpio)
         target_link_libraries(flasher PUBLIC ${pigpio_LIB})
         target_sources(flasher PRIVATE port/raspberry_port.c)
+    elseif (ESP_SERIAL_FLASHER_PORT STREQUAL "CUSTOM")
+        # Resolve dependencies at link time
     else()
-        message(FATAL_ERROR "Selected port is not supported")
+        message(FATAL_ERROR "Port '${ESP_SERIAL_FLASHER_PORT}' is not supported")
     endif()
 
     set(target flasher)
