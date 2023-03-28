@@ -152,10 +152,10 @@ static esp_loader_error_t spi_flash_command(spi_flash_cmd_t cmd, void *data_tx, 
     assert(rx_size <= 32); // Reading more than 32 bits back from a SPI flash operation is unsupported
     assert(tx_size <= 64); // Writing more than 64 bytes of data with one SPI command is unsupported
 
-    uint32_t SPI_USR_CMD  = (1 << 31);
-    uint32_t SPI_USR_MISO = (1 << 28);
-    uint32_t SPI_USR_MOSI = (1 << 27);
-    uint32_t SPI_CMD_USR  = (1 << 18);
+    uint32_t SPI_USR_CMD  = (1u << 31);
+    uint32_t SPI_USR_MISO = (1u << 28);
+    uint32_t SPI_USR_MOSI = (1u << 27);
+    uint32_t SPI_CMD_USR  = (1u << 18);
     uint32_t CMD_LEN_SHIFT = 28;
 
     // Save SPI configuration
@@ -170,7 +170,7 @@ static esp_loader_error_t spi_flash_command(spi_flash_cmd_t cmd, void *data_tx, 
         RETURN_ON_ERROR( spi_set_data_lengths(tx_size, rx_size) );
     }
 
-    uint32_t usr_reg_2 = (7 << CMD_LEN_SHIFT) | cmd;
+    uint32_t usr_reg_2 = (7u << CMD_LEN_SHIFT) | cmd;
     uint32_t usr_reg = SPI_USR_CMD;
     if (rx_size > 0) {
         usr_reg |= SPI_USR_MISO;
@@ -277,7 +277,7 @@ esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size)
         data[padding_index++] = PADDING_PATTERN;
     }
 
-    md5_update(payload, (size + 3) & ~3);
+    md5_update(payload, (size + 3u) & ~3u);
 
     loader_port_start_timer(DEFAULT_TIMEOUT);
 
