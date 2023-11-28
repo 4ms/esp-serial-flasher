@@ -276,6 +276,7 @@ esp_loader_error_t esp_loader_change_transmission_rate(uint32_t transmission_rat
   */
 #ifdef MD5_ENABLED
 esp_loader_error_t esp_loader_flash_verify(void);
+esp_loader_error_t esp_loader_get_md5_hex(uint32_t startAddress, uint32_t length, uint8_t expected_md5_hex[32]);
 #endif
 /**
   * @brief Toggles reset pin.
