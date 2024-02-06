@@ -396,6 +396,13 @@ esp_loader_error_t esp_loader_flash_verify(void)
 
 esp_loader_error_t esp_loader_get_md5_hex(uint32_t startAddress, uint32_t length, uint8_t expected_md5_hex[32])
 {
+    size_t flash_size = 0;
+    if (detect_flash_size(&flash_size) == ESP_LOADER_SUCCESS)
+    {
+        loader_port_start_timer(DEFAULT_TIMEOUT);
+        RETURN_ON_ERROR( loader_spi_parameters(flash_size) );
+    }
+
     loader_port_start_timer(timeout_per_mb(length, MD5_TIMEOUT_PER_MB));
 
     RETURN_ON_ERROR( loader_md5_cmd(startAddress, length, expected_md5_hex) );
