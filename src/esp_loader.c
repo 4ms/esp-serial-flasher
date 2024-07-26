@@ -262,6 +262,35 @@ esp_loader_error_t esp_loader_flash_start(uint32_t offset, uint32_t image_size, 
     return loader_flash_begin_cmd(offset, erase_size, block_size, blocks_to_write, encryption_in_cmd);
 }
 
+esp_loader_error_t esp_loader_flash_defl_start(uint32_t offset, uint32_t image_size, uint32_t compressed_size, uint32_t block_size)
+{
+    uint32_t blocks_to_write = (compressed_size + block_size - 1) / block_size;
+
+    // only support ROM loader here
+    // uncompressed size is rounded up to full blocks
+    uint32_t blocks_to_erase = (image_size + block_size - 1) / block_size;
+    uint32_t erase_size = block_size * blocks_to_erase;
+
+    s_flash_write_size = block_size;
+
+    size_t flash_size = 0;
+    if (detect_flash_size(&flash_size) == ESP_LOADER_SUCCESS) {
+        if (image_size > flash_size) {
+            return ESP_LOADER_ERROR_IMAGE_SIZE;
+        }
+        loader_port_start_timer(DEFAULT_TIMEOUT);
+        RETURN_ON_ERROR( loader_spi_parameters(flash_size) );
+    } else {
+        loader_port_debug_print("Flash size detection failed, falling back to default");
+    }
+
+    init_md5(offset, image_size);
+
+    bool encryption_in_cmd = encryption_in_begin_flash_cmd(s_target);
+
+    loader_port_start_timer(timeout_per_mb(erase_size, ERASE_REGION_TIMEOUT_PER_MB));
+    return loader_flash_defl_begin_cmd(offset, erase_size, block_size, blocks_to_write, encryption_in_cmd);
+}
 
 esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size)
 {
@@ -284,12 +313,40 @@ esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size)
     return loader_flash_data_cmd(data, s_flash_write_size);
 }
 
+esp_loader_error_t esp_loader_flash_defl_write(void *payload, uint32_t size)
+{
+    uint32_t padding_bytes = s_flash_write_size - size;
+    uint8_t *data = (uint8_t *)payload;
+    uint32_t padding_index = size;
+
+    if (size > s_flash_write_size) {
+        return ESP_LOADER_ERROR_INVALID_PARAM;
+    }
+
+    while (padding_bytes--) {
+        data[padding_index++] = PADDING_PATTERN;
+    }
+
+    md5_update(payload, (size + 3u) & ~3u);
+
+    loader_port_start_timer(DEFAULT_TIMEOUT);
+
+    return loader_flash_defl_data_cmd(data, s_flash_write_size);
+}
+
 
 esp_loader_error_t esp_loader_flash_finish(bool reboot)
 {
     loader_port_start_timer(DEFAULT_TIMEOUT);
 
     return loader_flash_end_cmd(!reboot);
+}
+
+esp_loader_error_t esp_loader_flash_defl_finish(bool reboot)
+{
+    loader_port_start_timer(DEFAULT_TIMEOUT);
+
+    return loader_flash_defl_end_cmd(!reboot);
 }
 
 

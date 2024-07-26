@@ -136,6 +136,24 @@ target_chip_t esp_loader_get_target(void);
 esp_loader_error_t esp_loader_flash_start(uint32_t offset, uint32_t image_size, uint32_t block_size);
 
 /**
+  * @brief Initiates deflate flash operation
+  *
+  * @param offset[in]            Address from which flash operation will be performed.
+  * @param image_size[in]        Size of the whole uncompressed binary to be loaded into flash.
+  * @param compressed_size[in]   Size of the compressed binary
+  * @param block_size[in]        Size of buffer used in subsequent calls to esp_loader_flash_write.
+  *
+  * @note  image_size is size of the whole image, whereas, block_size is chunk of data sent
+  *        to the target, each time esp_loader_flash_defl_write function is called.
+  *
+  * @return
+  *     - ESP_LOADER_SUCCESS Success
+  *     - ESP_LOADER_ERROR_TIMEOUT Timeout
+  *     - ESP_LOADER_ERROR_INVALID_RESPONSE Internal error
+  */
+esp_loader_error_t esp_loader_flash_defl_start(uint32_t offset, uint32_t image_size, uint32_t compressed_size, uint32_t block_size);
+
+/**
   * @brief Writes supplied data to target's flash memory.
   *
   * @param payload[in]      Data to be flashed into target's memory.
@@ -154,6 +172,24 @@ esp_loader_error_t esp_loader_flash_start(uint32_t offset, uint32_t image_size, 
 esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size);
 
 /**
+  * @brief Writes supplied compressed data to target's flash memory.
+  *
+  * @param payload[in]      Compressed data to be flashed into target's memory.
+  * @param size[in]         Size of payload in bytes.
+  *
+  * @note  size must not be greater that block_size supplied to previously called
+  *        esp_loader_flash_defl_start function. If size is less than block_size,
+  *        remaining bytes of payload buffer will be padded with 0xff.
+  *        Therefore, size of payload buffer has to be equal or greater than block_size.
+  *
+  * @return
+  *     - ESP_LOADER_SUCCESS Success
+  *     - ESP_LOADER_ERROR_TIMEOUT Timeout
+  *     - ESP_LOADER_ERROR_INVALID_RESPONSE Internal error
+  */
+esp_loader_error_t esp_loader_flash_defl_write(void *payload, uint32_t size);
+
+/**
   * @brief Ends flash operation.
   *
   * @param reboot[in]       reboot the target if true.
@@ -164,6 +200,18 @@ esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size);
   *     - ESP_LOADER_ERROR_INVALID_RESPONSE Internal error
   */
 esp_loader_error_t esp_loader_flash_finish(bool reboot);
+
+/**
+  * @brief Ends deflate flash operation.
+  *
+  * @param reboot[in]       reboot the target if true.
+  *
+  * @return
+  *     - ESP_LOADER_SUCCESS Success
+  *     - ESP_LOADER_ERROR_TIMEOUT Timeout
+  *     - ESP_LOADER_ERROR_INVALID_RESPONSE Internal error
+  */
+esp_loader_error_t esp_loader_flash_defl_finish(bool reboot);
 
 
 /**

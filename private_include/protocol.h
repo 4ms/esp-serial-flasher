@@ -85,6 +85,16 @@ typedef struct __attribute__((packed))
 typedef struct __attribute__((packed))
 {
     command_common_t common;
+    uint32_t uncompressed_size;
+    uint32_t packet_count;
+    uint32_t packet_size;
+    uint32_t offset;
+    uint32_t encrypted;
+} flash_defl_begin_command_t;
+
+typedef struct __attribute__((packed))
+{
+    command_common_t common;
     uint32_t data_size;
     uint32_t sequence_number;
     uint32_t zero_0;
@@ -197,9 +207,15 @@ typedef struct __attribute__((packed))
 
 esp_loader_error_t loader_flash_begin_cmd(uint32_t offset, uint32_t erase_size, uint32_t block_size, uint32_t blocks_to_write, bool encryption);
 
+esp_loader_error_t loader_flash_defl_begin_cmd(uint32_t offset, uint32_t uncompressed_size, uint32_t block_size, uint32_t blocks_to_write, bool encryption);
+
 esp_loader_error_t loader_flash_data_cmd(const uint8_t *data, uint32_t size);
 
+esp_loader_error_t loader_flash_defl_data_cmd(const uint8_t *data, uint32_t size);
+
 esp_loader_error_t loader_flash_end_cmd(bool stay_in_loader);
+
+esp_loader_error_t loader_flash_defl_end_cmd(bool stay_in_loader);
 
 esp_loader_error_t loader_mem_begin_cmd(uint32_t offset, uint32_t size, uint32_t blocks_to_write, uint32_t block_size);
 

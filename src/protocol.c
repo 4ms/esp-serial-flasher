@@ -153,6 +153,33 @@ esp_loader_error_t loader_flash_begin_cmd(uint32_t offset,
     return send_cmd(&flash_begin_cmd, sizeof(flash_begin_cmd) - encryption_size, NULL);
 }
 
+esp_loader_error_t loader_flash_defl_begin_cmd(uint32_t offset,
+                                          uint32_t uncompressed_size,
+                                          uint32_t block_size,
+                                          uint32_t blocks_to_write,
+                                          bool encryption)
+{
+    uint32_t encryption_size = encryption ? sizeof(uint32_t) : 0;
+
+    flash_defl_begin_command_t flash_begin_cmd = {
+        .common = {
+            .direction = WRITE_DIRECTION,
+            .command = FLASH_DEFL_BEGIN,
+            .size = CMD_SIZE(flash_begin_cmd) - encryption_size,
+            .checksum = 0
+        },
+        .uncompressed_size = uncompressed_size,
+        .packet_count = blocks_to_write,
+        .packet_size = block_size,
+        .offset = offset,
+        .encrypted = 0
+    };
+
+    s_sequence_number = 0;
+
+    return send_cmd(&flash_begin_cmd, sizeof(flash_begin_cmd) - encryption_size, NULL);
+}
+
 
 esp_loader_error_t loader_flash_data_cmd(const uint8_t *data, uint32_t size)
 {
@@ -170,6 +197,22 @@ esp_loader_error_t loader_flash_data_cmd(const uint8_t *data, uint32_t size)
     return send_cmd_with_data(&data_cmd, sizeof(data_cmd), data, size);
 }
 
+esp_loader_error_t loader_flash_defl_data_cmd(const uint8_t *data, uint32_t size)
+{
+    data_command_t data_cmd = {
+        .common = {
+            .direction = WRITE_DIRECTION,
+            .command = FLASH_DEFL_DATA,
+            .size = CMD_SIZE(data_cmd) + size,
+            .checksum = compute_checksum(data, size)
+        },
+        .data_size = size,
+        .sequence_number = s_sequence_number++,
+    };
+
+    return send_cmd_with_data(&data_cmd, sizeof(data_cmd), data, size);
+}
+
 
 esp_loader_error_t loader_flash_end_cmd(bool stay_in_loader)
 {
@@ -177,6 +220,21 @@ esp_loader_error_t loader_flash_end_cmd(bool stay_in_loader)
         .common = {
             .direction = WRITE_DIRECTION,
             .command = FLASH_END,
+            .size = CMD_SIZE(end_cmd),
+            .checksum = 0
+        },
+        .stay_in_loader = stay_in_loader
+    };
+
+    return send_cmd(&end_cmd, sizeof(end_cmd), NULL);
+}
+
+esp_loader_error_t loader_flash_defl_end_cmd(bool stay_in_loader)
+{
+    flash_end_command_t end_cmd = {
+        .common = {
+            .direction = WRITE_DIRECTION,
+            .command = FLASH_DEFL_END,
             .size = CMD_SIZE(end_cmd),
             .checksum = 0
         },
