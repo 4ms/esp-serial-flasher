@@ -19,6 +19,12 @@
 #include <stddef.h>
 #include <string.h>
 
+//#define LOG_MESSAGES
+
+#ifdef LOG_MESSAGES
+#include <stdio.h>
+#endif
+
 #define CMD_SIZE(cmd) ( sizeof(cmd) - sizeof(command_common_t) )
 
 static uint32_t s_sequence_number = 0;
@@ -41,6 +47,15 @@ static esp_loader_error_t send_cmd(const void *cmd_data, uint32_t size, uint32_t
     response_t response;
     command_t command = ((const command_common_t *)cmd_data)->command;
 
+    #ifdef LOG_MESSAGES
+    printf("Command op=0x%02x data len %u: ", (uint8_t)command, size);
+    for (int i=0; i<size; i++)
+    {
+        printf("%02x", ((const uint8_t *)cmd_data)[i]);
+    }
+    printf("\n");
+    #endif
+
     RETURN_ON_ERROR( SLIP_send_delimiter() );
     RETURN_ON_ERROR( SLIP_send((const uint8_t *)cmd_data, size) );
     RETURN_ON_ERROR( SLIP_send_delimiter() );
@@ -54,6 +69,20 @@ static esp_loader_error_t send_cmd_with_data(const void *cmd_data, size_t cmd_si
 {
     response_t response;
     command_t command = ((const command_common_t *)cmd_data)->command;
+
+    #ifdef LOG_MESSAGES
+    printf("Command op=0x%02x data len %u + %u: ", (uint8_t)command, cmd_size, data_size);
+    for (int i=0; i<cmd_size; i++)
+    {
+        printf("%02x", ((const uint8_t *)cmd_data)[i]);
+    }
+    printf(" ");
+    for (int i=0; i<data_size; i++)
+    {
+        printf("%02x", ((const uint8_t *)data)[i]);
+    }
+    printf("\n");
+    #endif
 
     RETURN_ON_ERROR( SLIP_send_delimiter() );
     RETURN_ON_ERROR( SLIP_send((const uint8_t *)cmd_data, cmd_size) );
@@ -113,6 +142,11 @@ static esp_loader_error_t check_response(command_t cmd, uint32_t *reg_value, voi
     } while ((response->direction != READ_DIRECTION) || (response->command != cmd));
 
     response_status_t *status = (response_status_t *)((uint8_t *)resp + resp_size - sizeof(response_status_t));
+
+    #ifdef LOG_MESSAGES
+    printf("Check response cmd 0x%02x: ", (uint8_t)cmd);
+    printf("Direction %u, command 0x%02x, size %u, failed 0x%02x, error 0x%02x\n", response->direction, response->command, response->size, status->failed, status->error);
+    #endif
 
     if (status->failed) {
         log_loader_internal_error(status->error);
