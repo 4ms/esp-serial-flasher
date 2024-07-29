@@ -315,23 +315,15 @@ esp_loader_error_t esp_loader_flash_write(void *payload, uint32_t size)
 
 esp_loader_error_t esp_loader_flash_defl_write(void *payload, uint32_t size)
 {
-    uint32_t padding_bytes = s_flash_write_size - size;
-    uint8_t *data = (uint8_t *)payload;
-    uint32_t padding_index = size;
-
     if (size > s_flash_write_size) {
         return ESP_LOADER_ERROR_INVALID_PARAM;
-    }
-
-    while (padding_bytes--) {
-        data[padding_index++] = PADDING_PATTERN;
     }
 
     md5_update(payload, (size + 3u) & ~3u);
 
     loader_port_start_timer(DEFAULT_TIMEOUT);
 
-    return loader_flash_defl_data_cmd(data, s_flash_write_size);
+    return loader_flash_defl_data_cmd(payload, size);
 }
 
 
