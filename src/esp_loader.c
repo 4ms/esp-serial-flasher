@@ -323,7 +323,7 @@ esp_loader_error_t esp_loader_flash_defl_write(void *payload, uint32_t size)
 
     // increase timeout because a single block of compressed data can cause large flash writes
     // the proper way to solve this is to decompress the block here to find the exact write size
-    loader_port_start_timer(DEFAULT_TIMEOUT * 20);
+    loader_port_start_timer(DEFAULT_TIMEOUT * 50);
 
     return loader_flash_defl_data_cmd(payload, size);
 }
