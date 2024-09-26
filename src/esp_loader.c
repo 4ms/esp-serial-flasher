@@ -18,6 +18,7 @@
 #include "esp_loader.h"
 #include "esp_targets.h"
 #include "md5_hash.h"
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -273,21 +274,27 @@ esp_loader_error_t esp_loader_flash_defl_start(uint32_t offset, uint32_t image_s
 
     s_flash_write_size = block_size;
 
+	loader_port_delay_ms(20);
     size_t flash_size = 0;
     if (detect_flash_size(&flash_size) == ESP_LOADER_SUCCESS) {
-        if (image_size > flash_size) {
+		loader_port_delay_ms(20);
+        if (image_size + offset > flash_size) {
             return ESP_LOADER_ERROR_IMAGE_SIZE;
         }
         loader_port_start_timer(DEFAULT_TIMEOUT);
         RETURN_ON_ERROR( loader_spi_parameters(flash_size) );
+		loader_port_delay_ms(20);
     } else {
         loader_port_debug_print("Flash size detection failed, falling back to default");
     }
 
+	loader_port_delay_ms(10);
     init_md5(offset, image_size);
 
+	loader_port_delay_ms(10);
     bool encryption_in_cmd = encryption_in_begin_flash_cmd(s_target);
 
+	loader_port_delay_ms(10);
     loader_port_start_timer(timeout_per_mb(erase_size, ERASE_REGION_TIMEOUT_PER_MB));
     return loader_flash_defl_begin_cmd(offset, erase_size, block_size, blocks_to_write, encryption_in_cmd);
 }
